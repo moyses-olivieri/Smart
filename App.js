@@ -9,9 +9,83 @@ import { Telainicial } from './views/Index';
 import { Agendamentos } from './views/Index';
 import { Fila } from './views/Index';
 import {Carregamento} from './views/Index';
+import Geolocation from '@react-native-community/geolocation';
+import { platform } from 'ios';
+import {plataform} from 'android';
 
 export default function App() {
+const [currentLatitude, setCurrentLatitude] = useState('');
+    const [currentLongitude, SetCurrentLongitude] = useState('');
+    const [wacthID, setWacthID] = useState('');
 
+    const callLocation = () => {
+        if (platform.OS = 'ios') {
+          getLocation();
+        } else{
+          const requestLocationPermission = async () => {
+            PermissionAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+            {
+              title: "Permissão de acesso a Localização",
+              message: "Este aplicativo precisa acessar sua localização",
+              buttonNeutral: "Pergunte-me depois",
+              buttonNegative: "Cancelar",
+              ButtonPositive: "Ok",
+            }
+          };
+          if(granted === PermissionsAndroid.RESULTS.GRANTED){
+            getLocation();
+          }else{
+            alert('Permissão de Localização Negada')
+          }
+        };
+        requestLocationPermission();
+      
+    }
+
+    const getLocation = () => {
+      Geolocation.getCurrentPosition(
+        (position) => {
+          const currentLatitude = JSON.stringify(position.coords.latitude);
+          const currentLongitude = JSON.stringify(position.coords.longitude);
+          setCurrentLatitude(currentLatitude);
+          SetCurrentLongitude(currentLongitude);
+          
+        },
+        (error) => alert(error.message),
+        {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+          );
+      const wacthID = Geolocation.watchPosition((position) => {
+        const currentLatitude = JSON.stringify(position.coords.latitude);
+          const currentLongitude = JSON.stringify(position.coords.longitude);
+          setCurrentLatitude(currentLatitude);
+          SetCurrentLongitude(currentLongitude);
+
+      });
+      setWacthID(wacthID);
+    }
+    const clearLocation = () => {
+      Geolocation.clearWatch(wacthID);
+    }
+
+    return(
+        <View Style = {Style.container}>
+          <Text style = {Style.boldText}>
+          Você está aqui
+          </Text>
+          <Text style = {style.text}>
+            Latitude: {currentLatitude}
+          </Text>
+          <Text style = {style.text}>
+          Longitude: {currentLongitude}
+          </Text>
+          <View style = {style.button}>
+            <Button title ="Obter minha localização" onPress={callLocation}/>
+          </View>
+          <View style = {style.button}>
+            <Button title= "Cancelar monitoramento" onPress={clearLocation}/>
+          </View>
+        </View>
+    );
   const Stack = createStackNavigator();
 
   return (
